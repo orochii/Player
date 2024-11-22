@@ -76,7 +76,7 @@ void Sprite_Enemy::OnMonsterSpriteReady(FileRequestResult* result) {
 
 	if (animated) {
 		SetOx(graphic->GetWidth() / (ANIMATED_FRAMES*2));
-		SetOy(graphic->GetHeight() / (ANIMATED_FRAMES * 2));
+		SetOy(graphic->GetHeight() / 2);
 	}
 	else {
 		SetOx(graphic->GetWidth() / 2);
