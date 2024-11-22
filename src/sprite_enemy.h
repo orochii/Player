@@ -31,6 +31,15 @@ class Game_Enemy;
  */
 class Sprite_Enemy : public Sprite_Battler {
 public:
+	const int ANIMATED_FRAMES = 5;
+	const int CYCLE_LENGTH = 10;
+	enum AnimFrame {
+		AnimFrame_Idle1,
+		AnimFrame_Idle2,
+		AnimFrame_Action,
+		AnimFrame_Damage,
+		AnimFrame_Hurt,
+	};
 	/**
 	 * Constructor.
 	 *
@@ -40,6 +49,11 @@ public:
 
 	~Sprite_Enemy() override;
 
+	/**
+	 * Updates sprite state.
+	 */
+	void Update();
+
 	void Draw(Bitmap& dst) override;
 
 	Game_Enemy* GetBattler() const;
@@ -48,10 +62,18 @@ public:
 
 	void ResetZ() final;
 
+	void SetAction(int type, int duration = 20);
+
 protected:
 	void CreateSprite();
 	void OnMonsterSpriteReady(FileRequestResult* result);
+	void SetFrame(int idx);
 
+	bool animated = false;
+	int cycle = 0;
+	int frameIdx = 0;
+	int actionType = -1;
+	int actionTime = 0;
 	std::string sprite_name;
 	BitmapRef graphic;
 	int hue = 0;

@@ -62,6 +62,8 @@ void Sprite_Enemy::CreateSprite() {
 		ResetZ();
 	}
 	else {
+		animated = sprite_name.at(0) == '%';
+		if (animated) sprite_name = sprite_name.append("_anim");
 		FileRequestAsync* request = AsyncHandler::RequestFile("Monster", sprite_name);
 		request->SetGraphicFile(true);
 		request_id = request->Bind(&Sprite_Enemy::OnMonsterSpriteReady, this);
@@ -72,9 +74,15 @@ void Sprite_Enemy::CreateSprite() {
 void Sprite_Enemy::OnMonsterSpriteReady(FileRequestResult* result) {
 	graphic = Cache::Monster(result->file);
 
-	SetOx(graphic->GetWidth() / 2);
-	SetOy(graphic->GetHeight() / 2);
-
+	if (animated) {
+		SetOx(graphic->GetWidth() / (ANIMATED_FRAMES*2));
+		SetOy(graphic->GetHeight() / (ANIMATED_FRAMES * 2));
+	}
+	else {
+		SetOx(graphic->GetWidth() / 2);
+		SetOy(graphic->GetHeight() / 2);
+	}
+	
 	bool hue_change = hue != 0;
 	if (hue_change) {
 		BitmapRef new_graphic = Bitmap::Create(graphic->GetWidth(), graphic->GetHeight());
@@ -84,8 +92,50 @@ void Sprite_Enemy::OnMonsterSpriteReady(FileRequestResult* result) {
 	}
 
 	SetBitmap(graphic);
-
+	SetFrame(frameIdx);
 	ResetZ();
+}
+
+void Sprite_Enemy::SetFrame(int idx) {
+	frameIdx = idx;
+	if (animated) {
+		int w = graphic->GetWidth() / ANIMATED_FRAMES;
+		int h = graphic->GetHeight();
+		SetSrcRect(Rect(w * frameIdx, 0, w, h));
+	}
+}
+
+void Sprite_Enemy::Update() {
+	if (!animated) return;
+
+	auto* enemy = static_cast<Game_Enemy*>(GetBattler());
+	// Dead
+	if (enemy->IsDead()) {
+		SetFrame(AnimFrame_Damage);
+	}
+	// Hurt
+	else if (enemy->GetBlinkTimer() > 0) {
+		SetFrame(AnimFrame_Damage);
+	}
+	// Weaken
+	else if (((enemy->GetHp() * 100) / enemy->GetMaxHp()) < 10 ) {
+		SetFrame(AnimFrame_Hurt);
+	}
+	// Acting?
+	else if (actionType >= 0) {
+		SetFrame(AnimFrame_Action);
+		actionTime--;
+		if (actionTime <= 0) actionType = -1;
+	}
+	// Else
+	else {
+		++cycle;
+		if (cycle >= CYCLE_LENGTH) {
+			cycle -= CYCLE_LENGTH;
+		}
+		int f = cycle / 5;
+		SetFrame(f);
+	}
 }
 
 void Sprite_Enemy::Draw(Bitmap& dst) {
@@ -143,4 +193,9 @@ void Sprite_Enemy::Refresh() {
 
 void Sprite_Enemy::ResetZ() {
 	Sprite_Battler::ResetZ();
+}
+
+void Sprite_Enemy::SetAction(int type, int duration) {
+	actionType = type;
+	actionTime = duration;
 }

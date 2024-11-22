@@ -2320,6 +2320,7 @@ Scene_Battle_Rpg2k3::BattleActionReturn Scene_Battle_Rpg2k3::ProcessBattleAction
 	auto* source = action->GetSource();
 	bool ranged_weapon = false;
 
+	// Actor animation
 	if (source->GetType() == Game_Battler::Type_Ally) {
 		auto* actor = static_cast<Game_Actor*>(source);
 		auto* sprite = actor->GetActorBattleSprite();
@@ -2362,6 +2363,14 @@ Scene_Battle_Rpg2k3::BattleActionReturn Scene_Battle_Rpg2k3::ProcessBattleAction
 			} else {
 				sprite->SetAnimationLoop(Sprite_Actor::LoopState_DefaultAnimationAfterFinish);
 			}
+		}
+	}
+	// Enemy animation
+	if (source->GetType() == Game_Battler::Type_Enemy) {
+		auto* enemy = static_cast<Game_Enemy*>(source);
+		auto* sprite = enemy->GetEnemyBattleSprite();
+		if (sprite) {
+			sprite->SetAction(1);
 		}
 	}
 
@@ -2513,7 +2522,6 @@ Scene_Battle_Rpg2k3::BattleActionReturn Scene_Battle_Rpg2k3::ProcessBattleAction
 			sprite->SetAnimationLoop(Sprite_Actor::LoopState_DefaultAnimationAfterFinish);
 		}
 	}
-
 	SetBattleActionState(BattleActionState_Execute);
 	return BattleActionReturn::eContinue;
 }

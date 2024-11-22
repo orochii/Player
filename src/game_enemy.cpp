@@ -187,6 +187,11 @@ void Game_Enemy::UpdateBattle() {
 	if (explode_timer > 0) --explode_timer;
 
 	Game_Battler::UpdateBattle();
+
+	auto* sprite = GetEnemyBattleSprite();
+	if (sprite) {
+		sprite->Update();
+	}
 }
 
 void Game_Enemy::ResetBattle() {
