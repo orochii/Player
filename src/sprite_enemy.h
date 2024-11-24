@@ -31,8 +31,15 @@ class Game_Enemy;
  */
 class Sprite_Enemy : public Sprite_Battler {
 public:
+<<<<<<< Updated upstream
 	const int ANIMATED_FRAMES = 5;
 	const int CYCLE_LENGTH = 10;
+=======
+<<<<<<< Updated upstream
+=======
+	const int ANIMATED_FRAMES = 5;
+	const int CYCLE_LENGTH = 40;
+>>>>>>> Stashed changes
 	enum AnimFrame {
 		AnimFrame_Idle1,
 		AnimFrame_Idle2,
@@ -40,6 +47,10 @@ public:
 		AnimFrame_Damage,
 		AnimFrame_Hurt,
 	};
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 	/**
 	 * Constructor.
 	 *
