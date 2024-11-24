@@ -96,11 +96,6 @@ void Sprite_Enemy::OnMonsterSpriteReady(FileRequestResult* result) {
 	ResetZ();
 }
 
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
 void Sprite_Enemy::SetFrame(int idx) {
 	frameIdx = idx;
 	if (animated) {
@@ -138,19 +133,11 @@ void Sprite_Enemy::Update() {
 		if (cycle >= CYCLE_LENGTH) {
 			cycle -= CYCLE_LENGTH;
 		}
-<<<<<<< Updated upstream
-		int f = cycle / 5;
-=======
 		int f = cycle / (CYCLE_LENGTH / 2);
->>>>>>> Stashed changes
 		SetFrame(f);
 	}
 }
 
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 void Sprite_Enemy::Draw(Bitmap& dst) {
 
 	auto alpha = 255;
