@@ -37,7 +37,8 @@ Sprite_Character::Sprite_Character(Game_Character* character, int x_offset, int 
 
 void Sprite_Character::Draw(Bitmap &dst) {
 	if (UsesCharset()) {
-		int row = character->GetFacing();
+		int row = (character->GetFacing());
+		row = Game_Map::GetGraphicDirection(row);
 		auto frame = character->GetAnimFrame();
 		if (frame >= lcf::rpg::EventPage::Frame_middle2) frame = lcf::rpg::EventPage::Frame_middle;
 		SetSrcRect({frame * chara_width, row * chara_height, chara_width, chara_height});
@@ -64,6 +65,7 @@ void Sprite_Character::Draw(Bitmap &dst) {
 		int yaw = Game_Map::GetMode7Yaw();
 		int slant = Game_Map::GetMode7Slant();
 		int horizon = Game_Map::GetMode7Horizon();
+		horizon = (horizon * (90 - slant)) / 90;
 		int baseline = center_y + Game_Map::GetMode7Baseline();
 		double scale = Game_Map::GetMode7Scale();
 		// Rotate.

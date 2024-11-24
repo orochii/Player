@@ -46,6 +46,7 @@ struct BattleArgs;
 
 // These are in sixteenths of a pixel.
 constexpr int SCREEN_TILE_SIZE = 256;
+const int INPUT4_VALUES[4] = { 2,6,8,4 };
 
 class MapUpdateAsyncContext {
 public:
@@ -430,12 +431,15 @@ namespace Game_Map {
 	int GetEncounterSteps();
 
 	/** @return If map is set to Mode7 */
+	int GetMoveDirection(int d);
+	int GetGraphicDirection(int d);
 	bool GetIsMode7();
 	int GetMode7Slant();
 	int GetMode7Yaw();
 	int GetMode7Horizon();
 	int GetMode7Baseline();
 	double GetMode7Scale();
+	void TiltMode7(int v);
 	void RotateMode7(int v);
 	/** Updates flag based on map's name. */
 	void RefreshMode7();

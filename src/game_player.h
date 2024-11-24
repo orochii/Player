@@ -52,6 +52,7 @@ public:
 	bool MakeWay(int from_x, int from_y, int to_x, int to_y) override;
 	void UpdateNextMovementAction() override;
 	void UpdateMovement(int amount) override;
+	int GetInputDirection();
 	void MoveRouteSetSpriteGraphic(std::string sprite_name, int index) override;
 	bool Move(int dir) override;
 	/** @} */

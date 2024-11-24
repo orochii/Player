@@ -377,6 +377,7 @@ void TilemapLayer::Draw(Bitmap& dst, uint8_t z_order, int render_ox, int render_
 		int yaw = Game_Map::GetMode7Yaw();
 		int slant = Game_Map::GetMode7Slant();
 		int horizon = Game_Map::GetMode7Horizon();
+		int scaledHorizon = (horizon * (90 - slant)) / 90;
 		// Rotate.
 		double angle = (yaw * (2 * M_PI) / 360);
 		int rotationOX = MODE7_CANVAS_HALFSIZE-8;
@@ -388,15 +389,15 @@ void TilemapLayer::Draw(Bitmap& dst, uint8_t z_order, int render_ox, int render_
 		const int scrH = Player::screen_height;
 		const int half_scrW = scrW / 2;
 		const int half_scrH = scrH / 2;
-		const int horscan = horizon * 2;
+		int horscan = scaledHorizon * 2;
 		int baseline = half_scrH + Game_Map::GetMode7Baseline();
 		double scale = Game_Map::GetMode7Scale();
 		double distance, zoom;
-		double iConst = 1 + (slant / (baseline + horizon));
-		double distanceBase = slant * scale / (baseline + horizon);
+		double iConst = 1 + (slant / (baseline + scaledHorizon));
+		double distanceBase = slant * scale / (baseline + scaledHorizon);
 		double syBase = MODE7_CANVAS_HALFSIZE + distanceBase*2;
-		for (int ly = horscan; ly < scrH; ly++) {
-			distance = (slant * scale) / (ly + horizon);
+		for (int ly = 0; ly < scrH; ly++) {
+			distance = (slant * scale) / (ly + scaledHorizon);
 			zoom = iConst - (distance / scale);
 			if (zoom > 0.001) {
 				int li = ly - horscan;

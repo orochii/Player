@@ -1486,12 +1486,56 @@ int Game_Map::GetEncounterSteps() {
 	return map_info.encounter_steps;
 }
 
+int Game_Map::GetMoveDirection(int dir) {
+	if (dir == 0) return 0;
+	if (isMode7) {
+		int idx = 0;
+		for (int i = 0; i < 4; i++) {
+			if (INPUT4_VALUES[i] == dir) {
+				idx = i;
+				break;
+			}
+		}
+		int yaw = (mode7Yaw + 45) % 360;
+		idx = (idx + (yaw / 90)) % 4;
+		dir = INPUT4_VALUES[idx];
+	}
+	/*if (dirIdx) {
+		switch (dir) {
+		case 2:
+			return Game_Character::Down;
+		case 4:
+			return Game_Character::Left;
+		case 6:
+			return Game_Character::Right;
+		case 8:
+			return Game_Character::Up;
+		}
+	}*/
+	return dir;
+}
+
+int Game_Map::GetGraphicDirection(int d) {
+	if (isMode7) {
+		int yaw = (mode7Yaw + 45) % 360;
+		int idx = (d + (yaw / 90)) % 4;
+		return idx;
+	}
+	return d;
+}
+
 bool Game_Map::GetIsMode7() {
 	return isMode7;
 }
 
 int Game_Map::GetMode7Slant() {
 	return mode7Slant;
+}
+
+void Game_Map::TiltMode7(int v) {
+	mode7Slant = mode7Slant + v;
+	if (mode7Slant < 25) mode7Slant = 25;
+	if (mode7Slant > 90) mode7Slant = 90;
 }
 
 int Game_Map::GetMode7Yaw() {

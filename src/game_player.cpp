@@ -307,7 +307,7 @@ void Game_Player::UpdateNextMovementAction() {
 	}
 
 	int move_dir = -1;
-	switch (Input::dir4) {
+	switch (GetInputDirection()) {
 		case 2:
 			move_dir = Down;
 			break;
@@ -346,6 +346,10 @@ void Game_Player::UpdateNextMovementAction() {
 		Main_Data::game_screen->FlashMapStepDamage();
 	}
 	UpdateEncounterSteps();
+}
+
+int Game_Player::GetInputDirection() {
+	return Game_Map::GetMoveDirection(Input::dir4);
 }
 
 void Game_Player::UpdateMovement(int amount) {
@@ -401,6 +405,12 @@ void Game_Player::Update() {
 		}
 		if (Input::IsPressed(Input::MINUS)) {
 			Game_Map::RotateMode7(-2);
+		}
+		if (Input::IsPressed(Input::N1)) {
+			Game_Map::TiltMode7(-1);
+		}
+		if (Input::IsPressed(Input::N3)) {
+			Game_Map::TiltMode7(1);
 		}
 	}
 }
