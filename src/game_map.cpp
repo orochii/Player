@@ -67,9 +67,14 @@ namespace {
 
 	bool need_refresh;
 	bool isMode7 = false;
-	int mode7Slant = 60;
-	int mode7Yaw = 180;
+	float mode7Slant = 60;
+	float mode7Yaw = 0;
 	int mode7Horizon = 20;
+	//
+	float mode7SlantTarget = 0;
+	float mode7SlantSpeed = 0;
+	float mode7YawTarget = 0;
+	float mode7YawSpeed = 0;
 
 	int animation_type;
 	bool animation_fast;
@@ -1268,8 +1273,54 @@ void Game_Map::Update(MapUpdateAsyncContext& actx, bool is_preupdate) {
 	}
 
 	Parallax::Update();
+	if (isMode7) {
+		UpdateMode7();
+	}
 
 	actx = {};
+}
+
+void Game_Map::UpdateMode7() {
+	if (mode7SlantSpeed > 0) {
+		if (mode7SlantTarget > mode7Slant) {
+			mode7Slant += mode7SlantSpeed;
+			if (mode7SlantTarget <= mode7Slant) {
+				mode7Slant = mode7SlantTarget;
+				mode7SlantSpeed = 0;
+			}
+		}
+		else {
+			mode7Slant -= mode7SlantSpeed;
+			if (mode7SlantTarget >= mode7Slant) {
+				mode7Slant = mode7SlantTarget;
+				mode7SlantSpeed = 0;
+			}
+		}
+	}
+	if (mode7YawSpeed > 0) {
+		float tt = mode7YawTarget;
+		float left = (mode7Yaw < tt) ? 360 - tt : tt;
+		float right = (mode7Yaw < tt) ? tt : 360 - tt;
+		float lDelta = abs(mode7Yaw - left);
+		float rDelta = abs(mode7Yaw - right);
+		//
+		bool rotLeft = (lDelta < rDelta);
+		if (rotLeft) {
+			mode7Yaw = mode7Yaw + 360 - mode7YawSpeed;
+			if (mode7Yaw < left) {
+				mode7Yaw = mode7YawTarget;
+				mode7YawSpeed = 0;
+			}
+		}
+		else {
+			mode7Yaw = mode7Yaw + mode7YawSpeed;
+			if (mode7Yaw > right) {
+				mode7Yaw = mode7YawTarget;
+				mode7YawSpeed = 0;
+			}
+		}
+		while (mode7Yaw >= 360) mode7Yaw -= 360;
+	}
 }
 
 void Game_Map::UpdateProcessedFlags(bool is_preupdate) {
@@ -1496,7 +1547,8 @@ int Game_Map::GetMoveDirection(int dir) {
 				break;
 			}
 		}
-		int yaw = (mode7Yaw + 45) % 360;
+		int yaw = mode7Yaw;
+		yaw = (yaw + 45) % 360;
 		idx = (idx + (yaw / 90)) % 4;
 		dir = INPUT4_VALUES[idx];
 	}
@@ -1517,7 +1569,8 @@ int Game_Map::GetMoveDirection(int dir) {
 
 int Game_Map::GetGraphicDirection(int d) {
 	if (isMode7) {
-		int yaw = (mode7Yaw + 45) % 360;
+		int yaw = mode7Yaw;
+		yaw = (yaw + 45) % 360;
 		int idx = (d + (yaw / 90)) % 4;
 		return idx;
 	}
@@ -1528,22 +1581,52 @@ bool Game_Map::GetIsMode7() {
 	return isMode7;
 }
 
-int Game_Map::GetMode7Slant() {
+float Game_Map::GetMode7Slant() {
 	return mode7Slant;
 }
 
 void Game_Map::TiltMode7(int v) {
-	mode7Slant = mode7Slant + v;
+	SetMode7Slant(mode7Slant*100 + v);
+}
+
+void Game_Map::TiltTowardsMode7(int v, int duration) {
+	float vv = v / 100.0f;
+	mode7SlantTarget = vv;
+	float delta = abs(mode7Slant - mode7SlantTarget);
+	mode7SlantSpeed = delta / duration;
+}
+
+void Game_Map::SetMode7Slant(int v) {
+	float vv = v / 100.0f;
+	mode7Slant = vv;
 	if (mode7Slant < 25) mode7Slant = 25;
 	if (mode7Slant > 90) mode7Slant = 90;
 }
 
-int Game_Map::GetMode7Yaw() {
+float Game_Map::GetMode7Yaw() {
 	return mode7Yaw;
 }
 
 void Game_Map::RotateMode7(int v) {
-	mode7Yaw = (mode7Yaw + 360 + v) % 360;
+	float vv = v / 100.0f;
+	mode7Yaw = (mode7Yaw + 360 + vv);
+	while (mode7Yaw >= 360) mode7Yaw -= 360;
+}
+
+void Game_Map::RotateTowardsMode7(int v, int duration) {
+	float vv = v / 100.0f;
+	mode7YawTarget = vv;
+	float deltaL = abs(360 - mode7Yaw - mode7YawTarget);
+	float deltaR = abs(mode7Yaw - mode7YawTarget);
+	float delta = (deltaL > deltaR) ? deltaR : deltaL;
+	mode7YawSpeed = delta / duration;
+}
+
+void Game_Map::SetMode7Yaw(int v) {
+	float vv = v / 100.0f;
+	mode7Yaw = vv;
+	while (mode7Yaw < 0) mode7Yaw += 360;
+	while (mode7Yaw >= 360) mode7Yaw -= 360;
 }
 
 int Game_Map::GetMode7Horizon() {
@@ -1565,6 +1648,7 @@ void Game_Map::RefreshMode7() {
 	int v = s.find("[M7]");
 	if (v != std::string::npos) {
 		isMode7 = true;
+		mode7Yaw = 0;
 		printf("Mode7 Enabled!");
 	}
 }

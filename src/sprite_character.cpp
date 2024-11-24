@@ -62,7 +62,7 @@ void Sprite_Character::Draw(Bitmap &dst) {
 		// Get map properties.
 		const int center_x = Player::screen_width / 2 - 8;
 		const int center_y = Player::screen_height / 2 + 8;
-		int yaw = Game_Map::GetMode7Yaw();
+		float yaw = Game_Map::GetMode7Yaw();
 		int slant = Game_Map::GetMode7Slant();
 		int horizon = Game_Map::GetMode7Horizon();
 		horizon = (horizon * (90 - slant)) / 90;

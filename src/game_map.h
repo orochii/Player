@@ -367,6 +367,8 @@ namespace Game_Map {
 	 */
 	void Update(MapUpdateAsyncContext& actx, bool is_preupdate = false);
 
+	void UpdateMode7();
+
 	/**
 	 * Gets current map info.
 	 *
@@ -434,13 +436,18 @@ namespace Game_Map {
 	int GetMoveDirection(int d);
 	int GetGraphicDirection(int d);
 	bool GetIsMode7();
-	int GetMode7Slant();
-	int GetMode7Yaw();
+	float GetMode7Slant();
+	float GetMode7Yaw();
 	int GetMode7Horizon();
 	int GetMode7Baseline();
 	double GetMode7Scale();
 	void TiltMode7(int v);
 	void RotateMode7(int v);
+	void TiltTowardsMode7(int v, int duration);
+	void RotateTowardsMode7(int v, int duration);
+	void SetMode7Slant(int v);
+	void SetMode7Yaw(int v);
+
 	/** Updates flag based on map's name. */
 	void RefreshMode7();
 

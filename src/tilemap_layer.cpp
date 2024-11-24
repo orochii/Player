@@ -374,7 +374,7 @@ void TilemapLayer::Draw(Bitmap& dst, uint8_t z_order, int render_ox, int render_
 	// Mode7 transformations
 	if (mode7) {
 		// Get map properties.
-		int yaw = Game_Map::GetMode7Yaw();
+		float yaw = Game_Map::GetMode7Yaw();
 		int slant = Game_Map::GetMode7Slant();
 		int horizon = Game_Map::GetMode7Horizon();
 		int scaledHorizon = (horizon * (90 - slant)) / 90;

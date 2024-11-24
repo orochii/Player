@@ -401,16 +401,20 @@ void Game_Player::Update() {
 			SetMenuCalling(true);
 		}
 		if (Input::IsPressed(Input::PLUS)) {
-			Game_Map::RotateMode7(2);
+			Game_Map::RotateMode7(200);
 		}
 		if (Input::IsPressed(Input::MINUS)) {
-			Game_Map::RotateMode7(-2);
+			Game_Map::RotateMode7(-200);
 		}
 		if (Input::IsPressed(Input::N1)) {
-			Game_Map::TiltMode7(-1);
+			Game_Map::TiltMode7(-100);
 		}
 		if (Input::IsPressed(Input::N3)) {
-			Game_Map::TiltMode7(1);
+			Game_Map::TiltMode7(100);
+		}
+		if (Input::IsPressed(Input::N5)) {
+			Game_Map::RotateTowardsMode7(0, 20);
+			Game_Map::TiltTowardsMode7(6000, 20);
 		}
 	}
 }
