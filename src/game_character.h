@@ -705,6 +705,8 @@ public:
 	 */
 	void CancelMoveRoute();
 
+	/** @return Total Y offset from external factors (jump, altitude, etc). */
+	int GetYOffset() const;
 	/** @return height of active jump in pixels */
 	int GetJumpHeight() const;
 

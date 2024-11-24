@@ -388,12 +388,17 @@ void Game_Player::Update() {
 	UpdatePan();
 
 	// ESC-Menu calling
-	if (Main_Data::game_system->GetAllowMenu()
-			&& !Game_Message::IsMessageActive()
+	if (!Game_Message::IsMessageActive()
 			&& !Game_Map::GetInterpreter().IsRunning())
 	{
-		if (Input::IsTriggered(Input::CANCEL)) {
+		if (Main_Data::game_system->GetAllowMenu() && Input::IsTriggered(Input::CANCEL)) {
 			SetMenuCalling(true);
+		}
+		if (Input::IsPressed(Input::PLUS)) {
+			Game_Map::RotateMode7(2);
+		}
+		if (Input::IsPressed(Input::MINUS)) {
+			Game_Map::RotateMode7(-2);
 		}
 	}
 }

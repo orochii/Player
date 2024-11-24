@@ -101,6 +101,8 @@ public:
 private:
 	BitmapRef chipset;
 	BitmapRef chipset_effect;
+	BitmapRef work_bitmap;
+	BitmapRef work_bitmap2;
 	std::unordered_set<uint32_t> chipset_tone_tiles;
 	std::vector<short> map_data;
 	std::vector<uint8_t> passable;

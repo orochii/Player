@@ -429,6 +429,17 @@ namespace Game_Map {
 	/** @return battle encounter steps. */
 	int GetEncounterSteps();
 
+	/** @return If map is set to Mode7 */
+	bool GetIsMode7();
+	int GetMode7Slant();
+	int GetMode7Yaw();
+	int GetMode7Horizon();
+	int GetMode7Baseline();
+	double GetMode7Scale();
+	void RotateMode7(int v);
+	/** Updates flag based on map's name. */
+	void RefreshMode7();
+
 	/**
 	 * Sets battle encounter steps.
 	 *

@@ -63,6 +63,10 @@ void Game_Character::MoveTo(int map_id, int x, int y) {
 	SetRemainingStep(0);
 }
 
+int Game_Character::GetYOffset() const {
+	return GetJumpHeight();
+}
+
 int Game_Character::GetJumpHeight() const {
 	if (IsJumping()) {
 		int jump_height = (GetRemainingStep() > SCREEN_TILE_SIZE / 2 ? SCREEN_TILE_SIZE - GetRemainingStep() : GetRemainingStep()) / 8;
@@ -85,12 +89,12 @@ int Game_Character::GetScreenX() const {
 int Game_Character::GetScreenY(bool apply_jump) const {
 	int y = GetSpriteY() / TILE_SIZE - Game_Map::GetDisplayY() / TILE_SIZE + TILE_SIZE;
 
-	if (apply_jump) {
-		y -= GetJumpHeight();
-	}
-
 	if (Game_Map::LoopVertical()) {
 		y = Utils::PositiveModulo(y, Game_Map::GetTilesY() * TILE_SIZE);
+	}
+
+	if (apply_jump) {
+		y -= GetYOffset();
 	}
 
 	return y;

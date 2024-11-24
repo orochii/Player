@@ -66,6 +66,10 @@ namespace {
 	lcf::rpg::SavePanorama panorama;
 
 	bool need_refresh;
+	bool isMode7 = false;
+	int mode7Slant = 60;
+	int mode7Yaw = 180;
+	int mode7Horizon = 20;
 
 	int animation_type;
 	bool animation_fast;
@@ -209,6 +213,9 @@ void Game_Map::Setup(std::unique_ptr<lcf::rpg::Map> map_in) {
 
 	SetPositionX(player.GetX() * SCREEN_TILE_SIZE - player.GetPanX());
 	SetPositionY(player.GetY() * SCREEN_TILE_SIZE - player.GetPanY());
+
+	// Set Mode7 flag
+	RefreshMode7();
 
 	// Update the save counts so that if the player saves the game
 	// events will properly resume upon loading.
@@ -1477,6 +1484,45 @@ int Game_Map::GetOriginalEncounterSteps() {
 
 int Game_Map::GetEncounterSteps() {
 	return map_info.encounter_steps;
+}
+
+bool Game_Map::GetIsMode7() {
+	return isMode7;
+}
+
+int Game_Map::GetMode7Slant() {
+	return mode7Slant;
+}
+
+int Game_Map::GetMode7Yaw() {
+	return mode7Yaw;
+}
+
+void Game_Map::RotateMode7(int v) {
+	mode7Yaw = (mode7Yaw + 360 + v) % 360;
+}
+
+int Game_Map::GetMode7Horizon() {
+	return mode7Horizon;
+}
+
+int Game_Map::GetMode7Baseline() {
+	return 4;
+}
+
+double Game_Map::GetMode7Scale() {
+	return 200;
+}
+
+void Game_Map::RefreshMode7() {
+	isMode7 = false;
+	const auto* current_info = &GetMapInfo();
+	std::string s = current_info->name.data();
+	int v = s.find("[M7]");
+	if (v != std::string::npos) {
+		isMode7 = true;
+		printf("Mode7 Enabled!");
+	}
 }
 
 void Game_Map::SetEncounterSteps(int step) {

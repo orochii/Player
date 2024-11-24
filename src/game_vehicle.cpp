@@ -147,8 +147,15 @@ int Game_Vehicle::GetAltitude() const {
 		return SCREEN_TILE_SIZE / (SCREEN_TILE_SIZE / TILE_SIZE);
 }
 
+int Game_Vehicle::GetYOffset() const {
+	return Game_Character::GetYOffset();
+}
+
 int Game_Vehicle::GetScreenY(bool apply_jump) const {
-	return Game_Character::GetScreenY(apply_jump) - GetAltitude();
+	if (apply_jump) {
+		return Game_Character::GetScreenY(apply_jump) - GetAltitude();
+	}
+	return Game_Character::GetScreenY(apply_jump);
 }
 
 bool Game_Vehicle::CanLand() const {

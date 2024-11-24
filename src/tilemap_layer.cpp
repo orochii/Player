@@ -150,6 +150,9 @@ TilemapLayer::TilemapLayer(int ilayer) :
 	// Its z-value should be between the z of the events in the upper layer and the hero
 	upper_layer(this, Priority_TilesetAbove + TileAbove + layer)
 {
+	// Buffer for dealing with transformations.
+	work_bitmap = Bitmap::Create(MODE7_CANVAS_HALFSIZE*2, MODE7_CANVAS_HALFSIZE*2);
+	work_bitmap2 = Bitmap::Create(MODE7_CANVAS_HALFSIZE*2, MODE7_CANVAS_HALFSIZE*2);
 }
 
 // This setup of having an always inlined DrawTile() which dispatches to DrawTileImpl()
@@ -206,16 +209,27 @@ static uint32_t MakeAbTileHash(int id, int anim_step) {
 }
 
 void TilemapLayer::Draw(Bitmap& dst, uint8_t z_order, int render_ox, int render_oy) {
+	// Get current Mode7 state.
+	const bool mode7 = Game_Map::GetIsMode7();
+	const int total_width = mode7 ? work_bitmap->GetWidth() : Player::screen_width;
+	const int total_height = mode7 ? work_bitmap->GetHeight() : Player::screen_height;
+	const int adjusted_render_ox = mode7 ? render_ox + ((total_width - Player::screen_width) / 2) : render_ox;
+	const int adjusted_render_oy = mode7 ? render_oy + ((total_height - Player::screen_height) / 2) : render_oy;
+	Bitmap& intermediateDst = mode7 ? *work_bitmap.get() : dst;
+	if (mode7) {
+		work_bitmap.get()->Clear();
+		work_bitmap2.get()->Clear();
+	}
 	// Get the number of tiles that can be displayed on window
-	int tiles_x = (int)ceil(Player::screen_width / (float)TILE_SIZE);
-	int tiles_y = (int)ceil(Player::screen_height / (float)TILE_SIZE);
+	int tiles_x = (int)ceil(total_width / (float)TILE_SIZE);
+	int tiles_y = (int)ceil(total_height / (float)TILE_SIZE);
 
 	// If ox or oy are not equal to the tile size draw the next tile too
 	// to prevent black (empty) tiles at the borders
-	if ((ox - render_ox) % TILE_SIZE != 0) {
+	if ((ox - adjusted_render_ox) % TILE_SIZE != 0) {
 		++tiles_x;
 	}
-	if ((oy - render_oy) % TILE_SIZE != 0) {
+	if ((oy - adjusted_render_oy) % TILE_SIZE != 0) {
 		++tiles_y;
 	}
 
@@ -244,11 +258,11 @@ void TilemapLayer::Draw(Bitmap& dst, uint8_t z_order, int render_ox, int render_
 		}
 	}
 
-	const int div_ox = div_rounding_down(ox - render_ox, TILE_SIZE);
-	const int div_oy = div_rounding_down(oy - render_oy, TILE_SIZE);
+	const int div_ox = div_rounding_down(ox - adjusted_render_ox, TILE_SIZE);
+	const int div_oy = div_rounding_down(oy - adjusted_render_oy, TILE_SIZE);
 
-	const int mod_ox = mod(ox - render_ox, TILE_SIZE);
-	const int mod_oy = mod(oy - render_oy, TILE_SIZE);
+	const int mod_ox = mod(ox - adjusted_render_ox, TILE_SIZE);
+	const int mod_oy = mod(oy - adjusted_render_oy, TILE_SIZE);
 
 	for (int y = 0; y < tiles_y; y++) {
 		for (int x = 0; x < tiles_x; x++) {
@@ -297,7 +311,7 @@ void TilemapLayer::Draw(Bitmap& dst, uint8_t z_order, int render_ox, int render_
 						}
 
 						auto tone_hash = MakeETileHash(id);
-						DrawTile(dst, *chipset, *chipset_effect, map_draw_x, map_draw_y, row, col, tone_hash, allow_fast_blit);
+						DrawTile(intermediateDst, *chipset, *chipset_effect, map_draw_x, map_draw_y, row, col, tone_hash, allow_fast_blit);
 					} else if (tile.ID >= BLOCK_C && tile.ID < BLOCK_D) {
 						// If Block C
 
@@ -306,7 +320,7 @@ void TilemapLayer::Draw(Bitmap& dst, uint8_t z_order, int render_ox, int render_
 						int row = 4 + animation_step_c;
 
 						auto tone_hash = MakeCTileHash(tile.ID, animation_step_c);
-						DrawTile(dst, *chipset, *chipset_effect, map_draw_x, map_draw_y, row, col, tone_hash, allow_fast_blit);
+						DrawTile(intermediateDst, *chipset, *chipset_effect, map_draw_x, map_draw_y, row, col, tone_hash, allow_fast_blit);
 					} else if (tile.ID < BLOCK_C) {
 						// If Blocks A1, A2, B
 
@@ -318,7 +332,7 @@ void TilemapLayer::Draw(Bitmap& dst, uint8_t z_order, int render_ox, int render_
 
 						// Create tone changed tile
 						auto tone_hash = MakeAbTileHash(tile.ID,  animation_step_ab);
-						DrawTile(dst, *autotiles_ab_screen, *autotiles_ab_screen_effect, map_draw_x, map_draw_y, row, col, tone_hash, allow_fast_blit);
+						DrawTile(intermediateDst, *autotiles_ab_screen, *autotiles_ab_screen_effect, map_draw_x, map_draw_y, row, col, tone_hash, allow_fast_blit);
 					} else {
 						// If blocks D1-D12
 
@@ -329,7 +343,7 @@ void TilemapLayer::Draw(Bitmap& dst, uint8_t z_order, int render_ox, int render_
 						int row = pos.y;
 
 						auto tone_hash = MakeDTileHash(tile.ID);
-						DrawTile(dst, *autotiles_d_screen, *autotiles_d_screen_effect, map_draw_x, map_draw_y, row, col, tone_hash, allow_fast_blit);
+						DrawTile(intermediateDst, *autotiles_d_screen, *autotiles_d_screen_effect, map_draw_x, map_draw_y, row, col, tone_hash, allow_fast_blit);
 					}
 				} else {
 					// If upper layer
@@ -351,9 +365,49 @@ void TilemapLayer::Draw(Bitmap& dst, uint8_t z_order, int render_ox, int render_
 						}
 
 						auto tone_hash = MakeFTileHash(id);
-						DrawTile(dst, *chipset, *chipset_effect, map_draw_x, map_draw_y, row, col, tone_hash);
+						DrawTile(intermediateDst, *chipset, *chipset_effect, map_draw_x, map_draw_y, row, col, tone_hash, mode7);
 					}
 				}
+			}
+		}
+	}
+	// Mode7 transformations
+	if (mode7) {
+		// Get map properties.
+		int yaw = Game_Map::GetMode7Yaw();
+		int slant = Game_Map::GetMode7Slant();
+		int horizon = Game_Map::GetMode7Horizon();
+		// Rotate.
+		double angle = (yaw * (2 * M_PI) / 360);
+		int rotationOX = MODE7_CANVAS_HALFSIZE-8;
+		int rotationOY = MODE7_CANVAS_HALFSIZE;
+		work_bitmap2.get()->RotateZoomOpacityBlit(rotationOX, rotationOY+4, rotationOX, rotationOY,
+			intermediateDst, intermediateDst.GetRect(), angle, 1, 1, Opacity::Opaque());
+		// Draw line by line.
+		const int scrW = Player::screen_width;
+		const int scrH = Player::screen_height;
+		const int half_scrW = scrW / 2;
+		const int half_scrH = scrH / 2;
+		const int horscan = horizon * 2;
+		int baseline = half_scrH + Game_Map::GetMode7Baseline();
+		double scale = Game_Map::GetMode7Scale();
+		double distance, zoom;
+		double iConst = 1 + (slant / (baseline + horizon));
+		double distanceBase = slant * scale / (baseline + horizon);
+		double syBase = MODE7_CANVAS_HALFSIZE + distanceBase*2;
+		for (int ly = horscan; ly < scrH; ly++) {
+			distance = (slant * scale) / (ly + horizon);
+			zoom = iConst - (distance / scale);
+			if (zoom > 0.001) {
+				int li = ly - horscan;
+				int opacity = zoom * zoom * 1024;
+				//
+				int sy = syBase - distance*2;
+				int scaledWidth = intermediateDst.GetWidth() * zoom * 2.0;
+				int displace = (scrW - scaledWidth) / 2;
+				Rect srcRect = Rect(0, sy, intermediateDst.GetWidth(), 1);
+				Rect dstRect = Rect(displace, ly, scaledWidth, 1);
+				dst.StretchBlit(dstRect, *work_bitmap2.get(), srcRect, Opacity(opacity), Bitmap::BlendMode::Normal);
 			}
 		}
 	}
